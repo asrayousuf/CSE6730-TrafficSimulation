@@ -2,7 +2,9 @@
 
 ## Event-Oriented Simulation
 Change directory to the 'event_simulation' folder: cd event_simulation
+
 Compile classes: find . -name "*.java" | xargs javac
+
 Run Command: java -cp src main.java.SimulateTraffic
 
 
