@@ -13,7 +13,7 @@ greenLightDuration = 30 #sec
 lightCycleTime = 60 #sec
 
 
-#Road Segments - checkpoint assumes that there are only three road segments, which sandwich two intersections
+#Road Segment Car Counts
 numSourceSegCars = 0
 numCorridorSegCars = 0
 
