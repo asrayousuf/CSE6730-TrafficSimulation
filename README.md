@@ -1,8 +1,14 @@
 # CSE6730-TrafficSimulation
 
+## Event-Oriented Simulation
+Change directory to the 'event_simulation' folder: cd event_simulation
+Compile classes: find . -name "*.java" | xargs javac
+Run Command: java -cp src main.java.SimulateTraffic
+
+
 ## Process-Oriented Simulation - Adithya
 
-located in the process_simulation folder
+Change directory to the 'process_simulation' folder: cd process_simulation
 
 Run Command: python ProcessOrientedSimulator.py
 
