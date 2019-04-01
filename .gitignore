@@ -1,3 +1,5 @@
 *.class
 *.idea
+*.iml
+out/*
 *.ipynb_checkpoints
