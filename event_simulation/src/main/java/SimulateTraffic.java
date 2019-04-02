@@ -18,7 +18,7 @@ public class SimulateTraffic {
 
         float future_ts = ts + (Engine.roadMap.get(nextSection).length / vehicle.velocity);
         vehicle.setSection(nextSection);
-        System.out.println("Vehicle "+ vehicle.id+ " moves to section "+ nextSection + "\n");
+        System.out.println("Vehicle "+ vehicle.id+ " moves to section "+ nextSection);
         Engine.roadMap.get(nextSection).vehiclesOnRoad.add(vehicle);
         Engine.roadMap.get(nextSection).setOccupiedLength(vehicle.len, true);
         departFromIntersection(event);

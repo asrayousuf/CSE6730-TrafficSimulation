@@ -12,10 +12,10 @@ public class OutputProcessor {
         System.out.println(" "+ vehicle.getId() + " departs at timestamp " + vehicle.getEndTime());
     }
     public static void displayEvent(Event event, int color){
-        System.out.println("At Time: "+ event.getTimestamp()+" seconds");
+        System.out.println("\nAt Time: "+ event.getTimestamp()+" seconds");
         String lightColor = color==0 ? "Green" : "Red";
-        System.out.println("Traffic Light TR at intersection : "+ event.getVehicle().getSection() +" is "+ lightColor);
+        System.out.println("Traffic Light TR at intersection "+ event.getVehicle().getSection() +" is "+ lightColor);
         System.out.println("Vehicle "+ event.getVehicle().getId()+" at section "+ event.getVehicle().getSection());
-        System.out.println();
+
     }
 }

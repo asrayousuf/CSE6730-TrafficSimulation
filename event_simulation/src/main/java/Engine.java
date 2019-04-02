@@ -16,7 +16,7 @@ public class Engine {
     static int departedCount = 0;
 
     public static Vehicle generateVehicle(int id, float startTime){
-        Vehicle vehicle = new Vehicle(id,10, 1,  1,  20, 1, startTime, 0);
+        Vehicle vehicle = new Vehicle(id,10, 1,  1,  22, 1, startTime, 0);
         return vehicle;
     }
     public static Event generateEvent(float currentTS, int id){
@@ -69,6 +69,7 @@ public class Engine {
             }
             schedule(event);
         }
+        System.out.println("\n--------------- Final Statistics -------------------------------");
         System.out.println("Total Number of Vehicles in the system = "+ vehicleId);
         System.out.println("Total number of events processed = " + eventCount);
         System.out.println("Number of vehicles exited the system = " + departedCount);
