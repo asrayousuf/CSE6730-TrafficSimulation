@@ -42,7 +42,7 @@ public class Engine {
         }
 
     }
-    public static void runSim(){
+    public static void runSim(int endTime){
         //Generate 2 initial vehicles
         int vehicleId =1;
         float ts =0;
@@ -57,7 +57,7 @@ public class Engine {
         roadMap.get(1).vehiclesOnRoad.add(vehicle2);
         roadMap.get(1).setOccupiedLength(vehicle2.len, true);
 
-        while(!Engine.eventList.isEmpty() && Engine.eventList.peek().timestamp <  260 ) {
+        while(!Engine.eventList.isEmpty() && Engine.eventList.peek().timestamp <  endTime ) {
             Event event = Engine.eventList.poll();
             eventCount++;
             if(Math.random()<0.3) {
@@ -70,15 +70,16 @@ public class Engine {
             schedule(event);
         }
         System.out.println("Total Number of Vehicles in the system = "+ vehicleId);
-        System.out.println("Total number of events processed =" + eventCount);
-        System.out.println("Number of vehicles exited the system =" + departedCount);
-        System.out.println("Total number of events yet to be processed =" + eventList.size());
+        System.out.println("Total number of events processed = " + eventCount);
+        System.out.println("Number of vehicles exited the system = " + departedCount);
+        System.out.println("Total number of events yet to be processed = " + eventList.size());
     }
 
     public static void main(String args[]) throws IOException {
         signalMap = InputProcessor.readSignalData("../resources/noYellowSignal.csv"); // edited vesion of signalTiming.csv with no yellow lights
         roadMap= Road.initialiseRoadMap();
-        runSim();
+        int endTime = Integer.parseInt(args[0]);
+        runSim(endTime);
 
     }
 }
