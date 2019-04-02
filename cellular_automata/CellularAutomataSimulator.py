@@ -20,7 +20,7 @@ def initialize(segments, max_vel, l, l_o, l_o_back):
     
     #initial velocity for cars
     vel_lane1 = [random.randint(0,max_vel) if (x !=0) else 0 for x in lane1]
-    vel_lane2 = [random.randint(0,max_vel) if (x!= 0) else 0 for x in lane2]
+    vel_lane2 = [random.randint(0,max_vel) if (x != 0) else 0 for x in lane2]
     
     #track simulation time for each car
     tt = ([0]*segments,[0]*segments) 
@@ -346,4 +346,6 @@ if __name__ == '__main__':
 
     plt.figure('Distribution of exits per simulation time')
     plt.bar(TDd.keys(), TDd.values())
+    plt.ylabel('cars')
+    plt.xlabel('simulation time')
     plt.show()
