@@ -19,3 +19,9 @@ Run Command: python ProcessOrientedSimulator.py
 Output Format: (Car, Timestamp, Event) for each event occuring
 
     START and FINISH remarks in Event string indicate each car process starting and completing the stretch of road the simulator focuses on for the checkpoint
+
+
+## Cellular Automata Simulation
+Change directory into the 'cellular_automata' folder
+
+Run command: python CellularAutomataSimulation.py
