@@ -25,3 +25,9 @@ Output Format: (Car, Timestamp, Event) for each event occuring
 Change directory into the 'cellular_automata' folder
 
 Run command: python CellularAutomataSimulation.py
+
+Simualation is initially populated with cars and none added afterwards
+
+Simulation runs until all cars have exited
+
+Output format: A histogram showing how many cars exit at each simulation step
