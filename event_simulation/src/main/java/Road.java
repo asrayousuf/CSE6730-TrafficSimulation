@@ -24,7 +24,7 @@ public class Road {
 
     public  static HashMap<Integer, Road> initialiseRoadMap(){
         HashMap<Integer, Road> roadMap = new HashMap<Integer, Road>();
-        float length = 100; //0.1 mile = 528ft
+        float length = 528; //0.1 mile = 528ft
         float occupiedLength = 0; // no cars on road initially
 
         roadMap.put(1, new Road(1, new LinkedList<Vehicle>(), length, occupiedLength));
@@ -48,11 +48,11 @@ public class Road {
 
     }
 
-    public static boolean isRoadFull(HashMap<Integer, Road> roadMap, int section){
-       if( roadMap.get(section).length > roadMap.get(section).occupiedLength){
-           return true;
-       }else{
+    public static boolean isRoadFull(Vehicle vehicle, int nextSection){
+       if( Engine.roadMap.get(nextSection).length - Engine.roadMap.get(nextSection).occupiedLength > vehicle.len){
            return false;
+       }else{
+           return true;
        }
     }
 }

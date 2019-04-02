@@ -9,7 +9,7 @@ public class Signal {
 
     int color; // 0-Green, 1-Yellow, 2-Red
 
-    public static int getColor(int section, float currentTime, int direction, int movement, HashMap<Integer, float[][]> signalMap) {
+    public static int getColor(int section, float currentTime, int direction, int movement) {
         int signalLoc =0;
         int color;
         float totalTime;
@@ -19,17 +19,16 @@ public class Signal {
         if(movement==1){
             signalLoc = 3;
 
-            totalTime = signalMap.get(section)[direction-1][7];
+            totalTime = Engine.signalMap.get(section)[direction-1][7];
         }else{
-            totalTime = signalMap.get(section)[direction-1][6];
+            totalTime = Engine.signalMap.get(section)[direction-1][6];
         }
         if(totalTime == 0){
             return 0;
         }
-        //float totalTime = signalMap.get(intersection)[(direction-1)][7]; //[TODO] change signalMap to add total time
         float modTime = currentTime % totalTime;
 
-        if(modTime <  signalMap.get(section)[(direction - 1)][signalLoc]){ //Assume 2 signals red and green
+        if(modTime <  Engine.signalMap.get(section)[(direction - 1)][signalLoc]){ //Assume 2 signals red and green
             color = 0;
         }else{
             color=2;
@@ -37,14 +36,14 @@ public class Signal {
         return color;
     }
 
-    public static float getTimeForGreenSignal(int section, float currentTime, int direction, int movement, HashMap<Integer, float[][]> signalMap) {
+    public static float getTimeForGreenSignal(int section, float currentTime, int direction, int movement) {
 
         int color;
         float totalTime;
         if(movement==1){
-             totalTime = signalMap.get(section)[direction-1][7];
+             totalTime = Engine.signalMap.get(section)[direction-1][7];
         }else{
-             totalTime = signalMap.get(section)[direction-1][6];
+             totalTime = Engine.signalMap.get(section)[direction-1][6];
         }
         if(totalTime == 0){
             return currentTime;

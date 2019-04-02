@@ -1,6 +1,13 @@
-*.class
+**/**.class
 *.idea
 *.iml
 out/*
 *.DS_Store
 *.ipynb_checkpoints
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
