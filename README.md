@@ -5,7 +5,7 @@ Change directory to the 'event_simulation' folder: cd event_simulation
 
 Compile classes: find . -name "*.java" | xargs javac
 
-Run Command: java -cp src main.java.Engine <args1>
+Run Command: java -cp src main.java.Engine args1
     
 where args1 = Number of seconds in event time that the simulation should run. Eg. 200
 
