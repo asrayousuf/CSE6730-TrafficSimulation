@@ -44,7 +44,7 @@ def generate_num_cars(lambda_value):
 def seed_section(intersection, lambda_value):
     num_cars = generate_num_cars(lambda_value)
 
-    section = corridor.intersections[intersection - 1].inbound_section
+    section = corridor.intersections[intersection - 1].northbound_section
     section.car_count = num_cars
 
     for i in range(num_cars):
@@ -56,54 +56,67 @@ def seed_section(intersection, lambda_value):
 
 def traverse_car(car):
     global controller
-    global now
 
-    leave(car, 1)
+    leave(car, 1, 'northbound')
     arrive(car, 2)
-    leave(car, 2)
+    leave(car, 2, 'northbound')
     arrive(car, 3)
-    leave(car, 3)
+    leave(car, 3, 'northbound')
     arrive(car, 4)
-    leave(car, 4)
+    leave(car, 4, 'northbound')
+    arrive(car, 5)
+
+def enhance_traffic(car, intersection_num, direction):
+    #make cars wait till they see green (i.e. time stamp must be corresponding to red, slightly offset from ones already in fel?
+    leave(car, intersection_num, direction)
+    for i in range(intersection_num + 1, 5):
+        arrive(car, i)
+        leave(car, i, 'northbound')
     arrive(car, 5)
 
 
-def leave(car, intersection):
+def leave(car, intersection_num, section_name):
     global controller
 
     execControl.acquire()
     while controller != car.identifier:
         execControl.wait()
-    if intersection == 1:
+    if intersection_num == 1:
         print (car.identifier, 'Entrance', now)
-    exit_intersection(corridor.intersections[intersection - 1])
-    move(car, corridor.intersections[intersection])
+    exit_intersection(corridor.intersections[intersection_num - 1], section_name)
+    move(car, corridor.intersections[intersection_num], 'TR')
     controller = 'Scheduler'
     execControl.notifyAll()
     execControl.release()
 
 
-def exit_intersection(intersection):
-    inbound_section = intersection.inbound_section
-    inbound_section.car_count -= 1
+def exit_intersection(intersection, section_name):
+    if section_name == 'eastbound':
+        section = intersection.eastbound_section
+    elif section_name == 'westbound':
+        section = intersection.westbound_section
+    else:
+        section = intersection.northbound_section
+    section.car_count -= 1
 
 
-def move(car, intersection):
-    inbound_section = intersection.inbound_section
-    section_clearance_time = inbound_section.car_count * CAR_LENGTH / corridor.speed_limit
-    section_travel_time = inbound_section.length / corridor.speed_limit
-    heapq.heappush(fel, (now + section_clearance_time + section_travel_time, car.id))
+def move(car, intersection, direction):
+    if direction == 'TR':
+        northbound_section = intersection.northbound_section
+        section_clearance_time = northbound_section.car_count * CAR_LENGTH / corridor.speed_limit
+        section_travel_time = northbound_section.length / corridor.speed_limit
+        heapq.heappush(fel, (now + section_clearance_time + section_travel_time, car.id))
 
 
-def arrive(car, intersection):
+def arrive(car, intersection_num):
     global controller
 
     execControl.acquire()
     while controller != car.identifier:
         execControl.wait()
-    enter_intersection(corridor.intersections[intersection - 1])
-    if intersection < 5:
-        wait_for_green(car, corridor.intersections[intersection - 1])
+    enter_intersection(corridor.intersections[intersection_num - 1])
+    if intersection_num < 5:
+        wait_for_green(car, corridor.intersections[intersection_num - 1], 'northbound')
     else:
         print (car.identifier, 'Exit', now)
     controller = 'Scheduler'
@@ -112,15 +125,24 @@ def arrive(car, intersection):
 
 
 def enter_intersection(intersection):
-    inbound_section = intersection.inbound_section
-    inbound_section.car_count += 1
+    northbound_section = intersection.northbound_section
+    northbound_section.car_count += 1
 
 
-def wait_for_green(car, intersection):
-    inbound_section = intersection.inbound_section
-    section_clearance_time = (inbound_section.car_count - 1) * CAR_LENGTH / corridor.speed_limit
+def wait_for_green(car, intersection, section_name):
+    if section_name == 'eastbound':
+        section = intersection.eastbound_section
+        traffic_light = intersection.eastbound_trafficLight
+    elif section_name == 'westbound':
+        section = intersection.westbound_section
+        traffic_light = intersection.westbound_trafficLight
+    else:
+        section = intersection.northbound_section
+        traffic_light = intersection.northbound_trafficLight
+
+    section_clearance_time = (section.car_count - 1) * CAR_LENGTH / corridor.speed_limit
     next_green_time = now + section_clearance_time
-    traffic_light = intersection.northbound_trafficLight
+    #if red light
     if int(next_green_time) % traffic_light.cycle_time >= traffic_light.green_duration:
         next_green_time += traffic_light.cycle_time - next_green_time % traffic_light.cycle_time
     heapq.heappush(fel, (next_green_time, car.id))
@@ -128,6 +150,7 @@ def wait_for_green(car, intersection):
 
 if __name__ == '__main__':
     seed_section(1, 0.10174586657417042)
+    #seed side sections
 
     execControl.acquire()
     while controller != 'Scheduler':

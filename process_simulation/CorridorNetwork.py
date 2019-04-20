@@ -21,11 +21,16 @@ class CorridorNetwork:
         self.speed_limit = Constants.SPEED_LIMIT
 
     class Intersection:
-        def __init__(self, n_green_duration, n_red_duration, w_green_duration, w_red_duration, e_green_duration, e_red_duration):
-            self.inbound_section = self.Section()
-            self.northbound_trafficLight = self.TrafficLight(n_green_duration, n_red_duration)
-            self.westbound_trafficLight = self.TrafficLight(w_green_duration, w_red_duration)
-            self.eastbound_trafficLight = self.TrafficLight(e_green_duration, e_red_duration)
+        def __init__(self, northbound_green_duration, northbound_red_duration, westbound_green_duration,
+                     westbound_red_duration, eastbound_green_duration, eastbound_red_duration):
+            self.northbound_section = self.Section()
+            self.northbound_trafficLight = self.TrafficLight(northbound_green_duration, northbound_red_duration)
+
+            self.westbound_section = self.Section()
+            self.westbound_trafficLight = self.TrafficLight(westbound_green_duration, westbound_red_duration)
+
+            self.eastbound_section = self.Section()
+            self.eastbound_trafficLight = self.TrafficLight(eastbound_green_duration, eastbound_red_duration)
 
         class Section:
             def __init__(self):
