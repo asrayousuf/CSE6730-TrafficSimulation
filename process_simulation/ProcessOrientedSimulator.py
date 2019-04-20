@@ -1,25 +1,26 @@
 from __future__ import division
 
+import random
+
+import math
+
 import heapq
 
 from threading import Lock, Thread, Condition
 
 from CorridorNetwork import Car, CorridorNetwork
 
+from Constants import CAR_LENGTH
 
 
-
-#Simulator Data Structures
-futureEventList = []
+# Future Event List
+fel = []
 
 # Corridor Network
 corridor = CorridorNetwork()
 
 # Cars
-car1 = Car('Car 1')
-car2 = Car('Car 2')
-car3 = Car('Car 3')
-car4 = Car('Car 4')
+cars = []
 
 # controlling thread
 controller = 'Scheduler'
@@ -27,6 +28,30 @@ execControl = Condition(Lock())
 
 # time stamp tracker
 now = 0.0
+
+#def setUpTraffic():
+    #move set up code from main to here, including heap pushing
+    #distribution for entering corridor at each intersection(with interarrival times)
+    #distributions for exiting out of intersections 2, 3, 4, 5
+
+
+def generate_num_cars(lambda_value):
+    mean = 1 / lambda_value
+    u = random.uniform(0, 1)
+    return int(round(-1 * mean * math.log(1 - u)))
+
+
+def seed_section(intersection, lambda_value):
+    num_cars = generate_num_cars(lambda_value)
+
+    section = corridor.intersections[intersection - 1].inbound_section
+    section.car_count = num_cars
+
+    for i in range(num_cars):
+        car = Car(i)
+        cars.append((car, Thread(target=traverse_car, args=(car,))))
+        #remember to change entry time on side intersections so they don't conflict with values in heap already
+        heapq.heappush(fel, (i * CAR_LENGTH / corridor.speed_limit, car.id))
 
 
 def traverse_car(car):
@@ -65,9 +90,9 @@ def exit_intersection(intersection):
 
 def move(car, intersection):
     inbound_section = intersection.inbound_section
-    section_clearance_time = inbound_section.car_count * corridor.car_length / corridor.speed_limit
+    section_clearance_time = inbound_section.car_count * CAR_LENGTH / corridor.speed_limit
     section_travel_time = inbound_section.length / corridor.speed_limit
-    heapq.heappush(futureEventList, (now + section_clearance_time + section_travel_time, car.identifier))
+    heapq.heappush(fel, (now + section_clearance_time + section_travel_time, car.id))
 
 
 def arrive(car, intersection):
@@ -93,53 +118,31 @@ def enter_intersection(intersection):
 
 def wait_for_green(car, intersection):
     inbound_section = intersection.inbound_section
-    section_clearance_time = (inbound_section.car_count - 1) * corridor.car_length / corridor.speed_limit
+    section_clearance_time = (inbound_section.car_count - 1) * CAR_LENGTH / corridor.speed_limit
     next_green_time = now + section_clearance_time
     traffic_light = intersection.northbound_trafficLight
     if int(next_green_time) % traffic_light.cycle_time >= traffic_light.green_duration:
         next_green_time += traffic_light.cycle_time - next_green_time % traffic_light.cycle_time
-    heapq.heappush(futureEventList, (next_green_time, car.identifier))
+    heapq.heappush(fel, (next_green_time, car.id))
+
 
 if __name__ == '__main__':
-    section1 = corridor.intersections[0].inbound_section
-
-    heapq.heappush(futureEventList, (0.0, car1.identifier))
-    car1Thread = Thread(target=traverse_car, args=(car1,))
-    section1.car_count += 1
-
-    heapq.heappush(futureEventList, (1 * corridor.car_length / corridor.speed_limit, car2.identifier))
-    car2Thread = Thread(target=traverse_car, args=(car2,))
-    section1.car_count += 1
-
-    heapq.heappush(futureEventList, (2 * corridor.car_length / corridor.speed_limit, car3.identifier))
-    car3Thread = Thread(target=traverse_car, args=(car3,))
-    section1.car_count += 1
-
-    heapq.heappush(futureEventList, (3 * corridor.car_length / corridor.speed_limit, car4.identifier))
-    car4Thread = Thread(target=traverse_car, args=(car4,))
-    section1.car_count += 1
+    seed_section(1, 0.10174586657417042)
 
     execControl.acquire()
     while controller != 'Scheduler':
         execControl.wait()
-    while futureEventList:
-        process = heapq.heappop(futureEventList)
+    while fel:
+        process = heapq.heappop(fel)
 
         now = process[0]
-        controller = process[1]
+        car_id_num = process[1]
+        car_tuple = cars[car_id_num]
+        controller = car_tuple[0].identifier
+        car_thread = car_tuple[1]
 
-        if controller == car1.identifier:
-            if not car1Thread.is_alive():
-                car1Thread.start()
-        elif controller == car2.identifier:
-            if not car2Thread.is_alive():
-                car2Thread.start()
-        elif controller == car3.identifier:
-            if not car3Thread.is_alive():
-                car3Thread.start()
-        elif controller == car4.identifier:
-            if not car4Thread.is_alive():
-                car4Thread.start()
+        if not car_thread.is_alive():
+            car_thread.start()
 
         execControl.notifyAll()
         execControl.release()

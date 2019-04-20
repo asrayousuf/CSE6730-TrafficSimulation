@@ -1,29 +1,35 @@
+import Constants
+
+
 class Car:
-    def __init__(self, identifier):
-        self.identifier = identifier
+    def __init__(self, id_num):
+        self.id = id_num
+        self.identifier = 'Car ' + str(id_num)
+        self.length = Constants.CAR_LENGTH
 
 
 class CorridorNetwork:
     def __init__(self):
-        intersection1 = self.Intersection(41.5, 3.2 + 55.4)
-        intersection2 = self.Intersection(41.5, 3.2 + 55.4)
-        intersection3 = self.Intersection(41.5, 3.2 + 55.4)
-        intersection4 = self.Intersection(41.5, 3.2 + 55.4)
-        intersection5 = self.Intersection(41.5, 3.2 + 55.4)
+        intersection1 = self.Intersection(34.7, 3.6 + 49.3, 28, 3.8 + 55, 30, 3.8 + 55)
+        intersection2 = self.Intersection(41.5, 3.2 + 55.4, 20.3, 3.6 + 76.2, 20.2, 3.6 + 76.1)
+        intersection3 = self.Intersection(60.9, 3.2 + 35.7, 27.3, 3.6 + 69.2, 27.3, 3.6 + 69.2)
+        intersection4 = self.Intersection(float('inf'), 0, 0, 0, 0, 0)
+        intersection5 = self.Intersection(34.6, 3.2 + 46.1, 22.4, 3.7 + 74, 36.9, 3.7 + 60.2)
 
         self.intersections = [intersection1, intersection2, intersection3, intersection4, intersection5]
 
-        self.speed_limit = 44
-        self.car_length = 18
+        self.speed_limit = Constants.SPEED_LIMIT
 
     class Intersection:
-        def __init__(self, green_duration, red_duration):
+        def __init__(self, n_green_duration, n_red_duration, w_green_duration, w_red_duration, e_green_duration, e_red_duration):
             self.inbound_section = self.Section()
-            self.northbound_trafficLight = self.TrafficLight(green_duration, red_duration)
+            self.northbound_trafficLight = self.TrafficLight(n_green_duration, n_red_duration)
+            self.westbound_trafficLight = self.TrafficLight(w_green_duration, w_red_duration)
+            self.eastbound_trafficLight = self.TrafficLight(e_green_duration, e_red_duration)
 
         class Section:
             def __init__(self):
-                self.length = 528
+                self.length = Constants.SECTION_LENGTH
                 self.car_count = 0
 
         class TrafficLight:
