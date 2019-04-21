@@ -2,6 +2,8 @@ from __future__ import division
 
 import random
 
+import numpy
+
 import math
 
 import heapq
@@ -36,6 +38,7 @@ now = 0.0
 
 
 def generate_num_cars(lambda_value):
+    print numpy.random.poisson(lambda_value, (1, 1))
     mean = 1 / lambda_value
     u = random.uniform(0, 1)
     return int(round(-1 * mean * math.log(1 - u)))
@@ -50,7 +53,6 @@ def seed_section(intersection, lambda_value):
     for i in range(num_cars):
         car = Car(i)
         cars.append((car, Thread(target=traverse_car, args=(car,))))
-        #remember to change entry time on side intersections so they don't conflict with values in heap already
         heapq.heappush(fel, (i * CAR_LENGTH / corridor.speed_limit, car.id))
 
 
@@ -68,6 +70,7 @@ def traverse_car(car):
 
 def enhance_traffic(car, intersection_num, direction):
     #make cars wait till they see green (i.e. time stamp must be corresponding to red, slightly offset from ones already in fel?
+    #make cycle time for all intersections upper bound
     leave(car, intersection_num, direction)
     for i in range(intersection_num + 1, 5):
         arrive(car, i)
@@ -140,11 +143,16 @@ def wait_for_green(car, intersection, section_name):
         section = intersection.northbound_section
         traffic_light = intersection.northbound_trafficLight
 
+    light_cycle_time = intersection.light_cycle_time
+    green_start_time = traffic_light.green_start_time
+    green_end_time = traffic_light.green_end_time
+
     section_clearance_time = (section.car_count - 1) * CAR_LENGTH / corridor.speed_limit
     next_green_time = now + section_clearance_time
-    #if red light
-    if int(next_green_time) % traffic_light.cycle_time >= traffic_light.green_duration:
-        next_green_time += traffic_light.cycle_time - next_green_time % traffic_light.cycle_time
+    next_green_relative_time = int(next_green_time) % light_cycle_time
+    if not (green_start_time <= next_green_relative_time < green_end_time):
+        next_green_time = math.ceil(next_green_time / light_cycle_time) * light_cycle_time + green_start_time
+
     heapq.heappush(fel, (next_green_time, car.id))
 
 
