@@ -2,18 +2,20 @@ package main.java;
 
 public class Vehicle {
     int id;
-    float len;
-    float width;
+    double len;
+    double width;
     int type; // vehicle class
-    float startTime;
-    float endTime;
-    float velocity;
+    double startTime;
+    double endTime;
+    int enterSection;
+    int exitSection;
+    double velocity;
 
 
     int section;
 
 
-    public Vehicle(int id, float len, float width, int type, float velocity, int section, float startTime, float endTime) {
+    public Vehicle(int id, double len, double width, int type, double velocity, int section, double startTime, double endTime, int enterSection, int exitSection) {
         this.id = id;
         this.len = len;
         this.width = width;
@@ -22,6 +24,8 @@ public class Vehicle {
         this.section = section;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.enterSection = enterSection;
+        this.exitSection = exitSection;
     }
     public int getId() {
         return id;
@@ -31,19 +35,19 @@ public class Vehicle {
         this.id = id;
     }
 
-    public float getLen() {
+    public double getLen() {
         return len;
     }
 
-    public void setLen(float len) {
+    public void setLen(double len) {
         this.len = len;
     }
 
-    public float getWidth() {
+    public double getWidth() {
         return width;
     }
 
-    public void setWidth(float width) {
+    public void setWidth(double width) {
         this.width = width;
     }
 
@@ -55,21 +59,38 @@ public class Vehicle {
         this.type = type;
     }
 
-    public float getStartTime() {
+    public double getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(float startTime) {
+    public void setStartTime(double startTime) {
         this.startTime = startTime;
     }
 
-    public float getEndTime() {
+    public double getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(long endTime) {
+    public void setEndTime(double endTime) {
         this.endTime = endTime;
     }
+
+    public int getEnterSection() {
+        return enterSection;
+    }
+
+    public void setEnterSection(int enterSection) {
+        this.enterSection = enterSection;
+    }
+
+    public int getExitSection() {
+        return exitSection;
+    }
+
+    public void setExitSection(int exitSection) {
+        this.exitSection = exitSection;
+    }
+
     public int getSection() {
         return section;
     }

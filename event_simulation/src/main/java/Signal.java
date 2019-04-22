@@ -9,10 +9,10 @@ public class Signal {
 
     int color; // 0-Green, 1-Yellow, 2-Red
 
-    public static int getColor(int section, float currentTime, int direction, int movement) {
+    public static int getColor(int section, double currentTime, int direction, int movement) {
         int signalLoc =0;
         int color;
-        float totalTime;
+        double totalTime;
         //1-through (TH), 2 - left-turn (LT), 3 - right-turn (RT)
         //1 - east-bound (EB), 2 -north-bound (NB), 3 - west-bound (WB)
         //0-Green, 1-Yellow, 2-Red
@@ -26,7 +26,7 @@ public class Signal {
         if(totalTime == 0){
             return 0;
         }
-        float modTime = currentTime % totalTime;
+        double modTime = currentTime % totalTime;
 
         if(modTime <  Engine.signalMap.get(section)[(direction - 1)][signalLoc]){ //Assume 2 signals red and green
             color = 0;
@@ -36,10 +36,9 @@ public class Signal {
         return color;
     }
 
-    public static float getTimeForGreenSignal(int section, float currentTime, int direction, int movement) {
-
+    public static double getTimeForGreenSignal(int section, double currentTime, int direction, int movement) {
         int color;
-        float totalTime;
+        double totalTime;
         if(movement==1){
              totalTime = Engine.signalMap.get(section)[direction-1][7];
         }else{
@@ -48,8 +47,8 @@ public class Signal {
         if(totalTime == 0){
             return currentTime;
         }
-        float timeMod = currentTime % totalTime;
-        float future_ts = currentTime + (totalTime-timeMod);
+        double timeMod = currentTime % totalTime;
+        double future_ts = currentTime + Math.ceil(totalTime-timeMod);
         return future_ts;
     }
 

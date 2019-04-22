@@ -2,10 +2,13 @@ package main.java;
 
 public class Event {
     Vehicle vehicle;
-    float timestamp;
-    public Event(Vehicle vehicle, float timestamp) {
+    double timestamp;
+    String eventType;
+    public Event(Vehicle vehicle, double timestamp, String eventType) {
         this.vehicle = vehicle;
         this.timestamp = timestamp;
+        this.eventType = eventType;
+
     }
 
     public Vehicle getVehicle() {
@@ -16,11 +19,11 @@ public class Event {
         this.vehicle = vehicle;
     }
 
-    public float getTimestamp() {
+    public double getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(float timestamp) {
+    public void setTimestamp(double timestamp) {
         this.timestamp = timestamp;
     }
 }
