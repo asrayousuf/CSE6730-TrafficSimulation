@@ -33,26 +33,42 @@ now = 0.0
 
 
 def generate_num_cars(lambda_value):
-    #print numpy.random.poisson(lambda_value, (1, 1))
     mean = 1 / lambda_value
     u = random.uniform(0, 1)
     return int(round(-1 * mean * math.log(1 - u)))
 
 
-def seed_section(intersection, lambda_value):
+def seed_section(intersection_num, section_name, lambda_value):
     num_cars = generate_num_cars(lambda_value)
 
-    section = corridor.intersections[intersection - 1].northbound_section
+    if section_name == 'eastbound':
+        section = corridor.intersections[intersection_num - 1].eastbound_section
+        start_time = now + 30
+    elif section_name == 'westbound':
+        section = corridor.intersections[intersection_num - 1].westbound_section
+        start_time = now + 50
+    else:
+        section = corridor.intersections[intersection_num - 1].northbound_section
+        start_time = now
+
     section.car_count = num_cars
 
     for i in range(num_cars):
-        car = Car(i)
+        car = Car(len(cars))
         cars.append((car, Thread(target=traverse_car, args=(car,))))
-        heapq.heappush(fel, (i * CAR_LENGTH / corridor.speed_limit, car.id))
+        heapq.heappush(fel, (start_time + i * CAR_LENGTH / corridor.speed_limit, car.id))
+
 
 def seed_traffic():
-    seed_section(1, 0.10174586657417042)
-    #distributions for exiting out of intersections 2, 3, 4, 5
+    seed_section(1, 'northbound', 0.10174586657417042)
+    seed_section(1, 'westbound', 0.026833631484794278)
+    seed_section(1, 'eastbound', 0.030003750468808602)
+
+    seed_section(2, 'westbound', 0.008724915866882711)
+    seed_section(2, 'eastbound', 0.004662004662004662)
+
+    seed_section(3, 'westbound', 0.002744990392533626)
+    seed_section(3, 'eastbound', 0.0074887668497254116)
 
 
 def traverse_car(car):
