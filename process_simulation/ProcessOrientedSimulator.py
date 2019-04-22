@@ -1,164 +1,200 @@
+from __future__ import division
+
+import random
+
+import numpy
+
+import math
+
 import heapq
 
 from threading import Lock, Thread, Condition
 
-#Simulator Data Structures
-futureEventList = []
+from CorridorNetwork import Car, CorridorNetwork
 
-#Constants - checkpoint uses the following assumptions and simplifications
-carLength = 14.0 #ft
-speedLim = 44.0 #ft/sec
-segmentLength = 528.0 #ft
-greenLightDuration = 30 #sec
-lightCycleTime = 60 #sec
+from Constants import CAR_LENGTH
 
 
-#Road Segment Car Counts
-numSourceSegCars = 0
-numCorridorSegCars = 0
+# Future Event List
+fel = []
 
+# Corridor Network
+corridor = CorridorNetwork()
 
-#current thread of execution with lock
-execControl = Condition(Lock())
+# Cars
+cars = []
+
+# controlling thread
 controller = 'Scheduler'
+execControl = Condition(Lock())
 
-#time stamp tracker
+# time stamp tracker
 now = 0.0
 
 
-#traverse car across corridor (for checkpoint, corridor is from intersection 1 to intersection 2)
-def traverseCar(car):
+def generate_num_cars(lambda_value):
+    mean = 1 / lambda_value
+    u = random.uniform(0, 1)
+    return int(round(-1 * mean * math.log(1 - u)))
+
+
+def seed_section(intersection_num, section_name, lambda_value):
+    num_cars = generate_num_cars(lambda_value)
+
+    if section_name == 'eastbound':
+        section = corridor.intersections[intersection_num - 1].eastbound_section
+        start_time = now + 30
+    elif section_name == 'westbound':
+        section = corridor.intersections[intersection_num - 1].westbound_section
+        start_time = now + 50
+    else:
+        section = corridor.intersections[intersection_num - 1].northbound_section
+        start_time = now
+
+    section.car_count = num_cars
+
+    for i in range(num_cars):
+        car = Car(len(cars))
+        cars.append((car, Thread(target=traverse_car, args=(car,))))
+        heapq.heappush(fel, (start_time + i * CAR_LENGTH / corridor.speed_limit, car.id))
+
+
+def seed_traffic():
+    seed_section(1, 'northbound', 0.10174586657417042)
+    seed_section(1, 'westbound', 0.026833631484794278)
+    seed_section(1, 'eastbound', 0.030003750468808602)
+
+    seed_section(2, 'westbound', 0.008724915866882711)
+    seed_section(2, 'eastbound', 0.004662004662004662)
+
+    seed_section(3, 'westbound', 0.002744990392533626)
+    seed_section(3, 'eastbound', 0.0074887668497254116)
+
+
+def traverse_car(car):
     global controller
-    global now
 
-    arriveEvent1(car)
+    leave(car, 1, 'northbound')
+    arrive(car, 2)
+    leave(car, 2, 'northbound')
+    arrive(car, 3)
+    leave(car, 3, 'northbound')
+    arrive(car, 4)
+    leave(car, 4, 'northbound')
+    arrive(car, 5)
 
-    leaveEvent1(car)
+def enhance_traffic(car, intersection_num, direction):
+    #make cars wait till they see green (i.e. time stamp must be corresponding to red, slightly offset from ones already in fel?
+    #make cycle time for all intersections upper bound
+    leave(car, intersection_num, direction)
+    for i in range(intersection_num + 1, 5):
+        arrive(car, i)
+        leave(car, i, 'northbound')
+    arrive(car, 5)
 
-    arriveEvent2(car)
 
-    leaveEvent2(car)
-
-
-def arriveEvent1(car):
+def leave(car, intersection_num, section_name):
     global controller
+
     execControl.acquire()
-    while controller != car:
+    while controller != car.identifier:
         execControl.wait()
-    arriveAtIntersection1()
-    print (car, now, "Arrive at Intersection 1 - START")
-
-    waitForGreenLight1(car)
+    if intersection_num == 1:
+        print (car.identifier, 'Entrance', now)
+    exit_intersection(corridor.intersections[intersection_num - 1], section_name)
+    move(car, corridor.intersections[intersection_num], 'TR')
     controller = 'Scheduler'
     execControl.notifyAll()
     execControl.release()
 
-def arriveAtIntersection1():
-    global numSourceSegCars
-    numSourceSegCars += 1
 
-def waitForGreenLight1(car):
-    curSegClearanceTime = (numSourceSegCars - 1) * carLength / speedLim
-    nextGreenLightTime = now + curSegClearanceTime
-    if int(nextGreenLightTime) % lightCycleTime >= 30:
-        nextGreenLightTime += lightCycleTime - nextGreenLightTime % lightCycleTime
-    heapq.heappush(futureEventList, (nextGreenLightTime, car))
+def exit_intersection(intersection, section_name):
+    if section_name == 'eastbound':
+        section = intersection.eastbound_section
+    elif section_name == 'westbound':
+        section = intersection.westbound_section
+    else:
+        section = intersection.northbound_section
+    section.car_count -= 1
 
-def leaveEvent1(car):
+
+def move(car, intersection, direction):
+    if direction == 'TR':
+        northbound_section = intersection.northbound_section
+        section_clearance_time = northbound_section.car_count * CAR_LENGTH / corridor.speed_limit
+        section_travel_time = northbound_section.length / corridor.speed_limit
+        heapq.heappush(fel, (now + section_clearance_time + section_travel_time, car.id))
+
+
+def arrive(car, intersection_num):
     global controller
-    execControl.acquire()
-    while controller != car:
-        execControl.wait()
-    leaveFromIntersection1()
-    print (car, now, "Leave from Intersection 1")
 
-    move(car)
+    execControl.acquire()
+    while controller != car.identifier:
+        execControl.wait()
+    enter_intersection(corridor.intersections[intersection_num - 1])
+    if intersection_num < 5:
+        wait_for_green(car, corridor.intersections[intersection_num - 1], 'northbound')
+    else:
+        print (car.identifier, 'Exit', now)
     controller = 'Scheduler'
     execControl.notifyAll()
     execControl.release()
 
-def leaveFromIntersection1():
-    global numSourceSegCars
-    numSourceSegCars -= 1
 
-def move(car):
-    nextSegClearanceTime = numCorridorSegCars * carLength / speedLim
-    nextSegFrontTravelTime = segmentLength / speedLim
-    heapq.heappush(futureEventList, (now + nextSegClearanceTime + nextSegFrontTravelTime, car))
+def enter_intersection(intersection):
+    northbound_section = intersection.northbound_section
+    northbound_section.car_count += 1
 
-def arriveEvent2(car):
-    global controller
-    execControl.acquire()
-    while controller != car:
-        execControl.wait()
-    arriveAtIntersection2()
-    print (car, now, "Arrive at Intersection 2")
 
-    waitForGreenLight2(car)
-    controller = 'Scheduler'
-    execControl.notifyAll()
-    execControl.release()
+def wait_for_green(car, intersection, section_name):
+    if section_name == 'eastbound':
+        section = intersection.eastbound_section
+        traffic_light = intersection.eastbound_trafficLight
+    elif section_name == 'westbound':
+        section = intersection.westbound_section
+        traffic_light = intersection.westbound_trafficLight
+    else:
+        section = intersection.northbound_section
+        traffic_light = intersection.northbound_trafficLight
 
-def arriveAtIntersection2():
-    global numCorridorSegCars
-    numCorridorSegCars += 1
+    light_cycle_time = intersection.light_cycle_time
+    green_start_time = traffic_light.green_start_time
+    green_end_time = traffic_light.green_end_time
 
-def waitForGreenLight2(car):
-    curSegClearanceTime = (numCorridorSegCars - 1) * carLength / speedLim
-    nextGreenLightTime = now + curSegClearanceTime
-    if int(nextGreenLightTime) % lightCycleTime >= 30:
-        nextGreenLightTime += lightCycleTime - nextGreenLightTime % lightCycleTime
-    heapq.heappush(futureEventList, (nextGreenLightTime, car))
+    section_clearance_time = (section.car_count - 1) * CAR_LENGTH / corridor.speed_limit
+    next_green_time = now + section_clearance_time
+    relative_next_green_time = next_green_time % light_cycle_time
+    if not (green_start_time <= relative_next_green_time < green_end_time):
+        if section_name == 'eastbound':
+            next_green_time = next_green_time - relative_next_green_time + green_start_time
+        elif section_name == 'westbound':
+            if 0 <= relative_next_green_time < green_start_time:
+                relative_next_green_time += light_cycle_time
+            next_green_time = next_green_time - (relative_next_green_time - green_start_time) + light_cycle_time
+        else:
+            next_green_time = next_green_time - (relative_next_green_time - green_start_time) + light_cycle_time
 
-def leaveEvent2(car):
-    global controller
-    execControl.acquire()
-    while controller != car:
-        execControl.wait()
-    leaveFromIntersection2()
-    print (car, now, "Leave from Intersection 2 - FINISH")
-    controller = 'Scheduler'
-    execControl.notifyAll()
-    execControl.release()
+    heapq.heappush(fel, (next_green_time, car.id))
 
-def leaveFromIntersection2():
-    global numCorridorSegCars
-    numCorridorSegCars -= 1
 
 if __name__ == '__main__':
-    heapq.heappush(futureEventList, (0.0, 'Car 1'))
-    car1Thread = Thread(target=traverseCar, args=('Car 1',))
-
-    heapq.heappush(futureEventList, (1 * carLength / speedLim, 'Car 2'))
-    car2Thread = Thread(target=traverseCar, args=('Car 2',))
-
-    heapq.heappush(futureEventList, (2 * carLength / speedLim, 'Car 3'))
-    car3Thread = Thread(target=traverseCar, args=('Car 3',))
-
-    heapq.heappush(futureEventList, (3 * carLength / speedLim, 'Car 4'))
-    car4Thread = Thread(target=traverseCar, args=('Car 4',))
+    seed_traffic()
 
     execControl.acquire()
     while controller != 'Scheduler':
         execControl.wait()
-    while futureEventList:
-        process = heapq.heappop(futureEventList)
+    while fel:
+        process = heapq.heappop(fel)
 
         now = process[0]
-        controller = process[1]
+        car_id_num = process[1]
+        car_tuple = cars[car_id_num]
+        controller = car_tuple[0].identifier
+        car_thread = car_tuple[1]
 
-        if controller == 'Car 1':
-            if not car1Thread.is_alive():
-                car1Thread.start()
-        elif controller == 'Car 2':
-            if not car2Thread.is_alive():
-                car2Thread.start()
-        elif controller == 'Car 3':
-            if not car3Thread.is_alive():
-                car3Thread.start()
-        elif controller == 'Car 4':
-            if not car4Thread.is_alive():
-                car4Thread.start()
+        if not car_thread.is_alive():
+            car_thread.start()
 
         execControl.notifyAll()
         execControl.release()
