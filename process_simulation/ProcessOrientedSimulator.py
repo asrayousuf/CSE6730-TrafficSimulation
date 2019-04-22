@@ -31,14 +31,9 @@ execControl = Condition(Lock())
 # time stamp tracker
 now = 0.0
 
-#def setUpTraffic():
-    #move set up code from main to here, including heap pushing
-    #distribution for entering corridor at each intersection(with interarrival times)
-    #distributions for exiting out of intersections 2, 3, 4, 5
-
 
 def generate_num_cars(lambda_value):
-    print numpy.random.poisson(lambda_value, (1, 1))
+    #print numpy.random.poisson(lambda_value, (1, 1))
     mean = 1 / lambda_value
     u = random.uniform(0, 1)
     return int(round(-1 * mean * math.log(1 - u)))
@@ -54,6 +49,10 @@ def seed_section(intersection, lambda_value):
         car = Car(i)
         cars.append((car, Thread(target=traverse_car, args=(car,))))
         heapq.heappush(fel, (i * CAR_LENGTH / corridor.speed_limit, car.id))
+
+def seed_traffic():
+    seed_section(1, 0.10174586657417042)
+    #distributions for exiting out of intersections 2, 3, 4, 5
 
 
 def traverse_car(car):
@@ -149,16 +148,22 @@ def wait_for_green(car, intersection, section_name):
 
     section_clearance_time = (section.car_count - 1) * CAR_LENGTH / corridor.speed_limit
     next_green_time = now + section_clearance_time
-    next_green_relative_time = int(next_green_time) % light_cycle_time
-    if not (green_start_time <= next_green_relative_time < green_end_time):
-        next_green_time = math.ceil(next_green_time / light_cycle_time) * light_cycle_time + green_start_time
+    relative_next_green_time = next_green_time % light_cycle_time
+    if not (green_start_time <= relative_next_green_time < green_end_time):
+        if section_name == 'eastbound':
+            next_green_time = next_green_time - relative_next_green_time + green_start_time
+        elif section_name == 'westbound':
+            if 0 <= relative_next_green_time < green_start_time:
+                relative_next_green_time += light_cycle_time
+            next_green_time = next_green_time - (relative_next_green_time - green_start_time) + light_cycle_time
+        else:
+            next_green_time = next_green_time - (relative_next_green_time - green_start_time) + light_cycle_time
 
     heapq.heappush(fel, (next_green_time, car.id))
 
 
 if __name__ == '__main__':
-    seed_section(1, 0.10174586657417042)
-    #seed side sections
+    seed_traffic()
 
     execControl.acquire()
     while controller != 'Scheduler':
