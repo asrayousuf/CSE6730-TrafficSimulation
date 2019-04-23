@@ -10,7 +10,7 @@ from threading import Lock, Thread, Condition
 
 from CorridorNetwork import Car, CorridorNetwork
 
-from Constants import CAR_LENGTH
+from Constants import CAR_LENGTH, SCALE
 
 
 # Future Event List
@@ -25,6 +25,9 @@ cars = []
 # car travel times
 travel_times = []
 
+#total tracked cars
+tracked_car_count =  0
+
 # incomplete car count
 incomplete_car_count = 0
 
@@ -36,14 +39,14 @@ execControl = Condition(Lock())
 now = 0.0
 
 
-def generate_num_cars(lambda_value):
-    mean = 1 / lambda_value
+def generate_num_cars(rate_param):
+    mean = 1 / rate_param
     u = random.uniform(0, 1)
     return int(round(-1 * mean * math.log(1 - u)))
 
 
-def seed_section(intersection_num, section_name, lambda_value):
-    num_cars = generate_num_cars(lambda_value)
+def seed_section(intersection_num, section_name, rate_param):
+    num_cars = generate_num_cars(rate_param)
 
     if section_name == 'eastbound':
         section = corridor.intersections[intersection_num - 1].eastbound_section
@@ -57,6 +60,8 @@ def seed_section(intersection_num, section_name, lambda_value):
         section = corridor.intersections[intersection_num - 1].northbound_section
         start_time = now
         is_tracked = True
+        global tracked_car_count
+        tracked_car_count = num_cars
         global incomplete_car_count
         incomplete_car_count = num_cars
 
@@ -74,14 +79,14 @@ def seed_section(intersection_num, section_name, lambda_value):
 
 
 def seed_traffic():
-    seed_section(1, 'northbound', 0.11157156518967166)
+    seed_section(1, 'northbound', SCALE * 0.11157156518967166)
 
-    seed_section(1, 'westbound', 0.024334016393442622)
-    seed_section(1, 'eastbound', 0.027154494783478634)
+    seed_section(1, 'westbound', SCALE * 0.024334016393442622)
+    seed_section(1, 'eastbound', SCALE * 0.027154494783478634)
 
-    seed_section(2, 'westbound', 0.01001401962747847)
+    seed_section(2, 'westbound', SCALE * 0.01001401962747847)
 
-    seed_section(3, 'eastbound', 0.0061462814996926865)
+    seed_section(3, 'eastbound', SCALE * 0.0061462814996926865)
 
 
 def traverse_car(car):
@@ -113,7 +118,6 @@ def leave(car, intersection_num, section_name):
         execControl.wait()
     if intersection_num == 1:
         if car.is_tracked:
-            print (car.identifier, 'Entrance', now)
             car.entrance_time = now
 
     exit_intersection(corridor.intersections[intersection_num - 1], section_name)
@@ -154,9 +158,11 @@ def arrive(car, intersection_num):
         wait_for_green(car, corridor.intersections[intersection_num - 1], 'northbound')
     elif car.is_tracked:
         incomplete_car_count -= 1
-        print (car.identifier, 'Exit', now)
         car.exit_time = now
-        travel_times.append(car.exit_time - car.entrance_time)
+        if tracked_car_count - incomplete_car_count > 1:
+            travel_times.append(car.exit_time - car.entrance_time)
+        else:
+            print 'Warm Up Time: ' + str(car.exit_time - car.entrance_time)
     controller = 'Scheduler'
     execControl.notifyAll()
     execControl.release()
@@ -224,6 +230,6 @@ if __name__ == '__main__':
             execControl.wait()
 
     if len(travel_times) > 0:
-        print 'Mean: ' + str(sum(travel_times) / len(travel_times))
+        print 'Mean Travel Time: ' + str(sum(travel_times) / len(travel_times))
     else:
-        print 'No cars were generated.'
+        print 'No cars generated'
