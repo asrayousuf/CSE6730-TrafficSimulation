@@ -16,9 +16,7 @@ Change directory to the 'process_simulation' folder: cd process_simulation
 
 Run Command: python ProcessOrientedSimulator.py
 
-Output Format: (Car, Timestamp, Event) for each event occuring
-
-    START and FINISH remarks in Event string indicate each car process starting and completing the stretch of road the simulator focuses on for the checkpoint
+Output: Warm-up time and Mean Travel Time
 
 
 ## Cellular Automata Simulation
