@@ -3,13 +3,14 @@
 ## Event-Oriented Simulation
 Change directory to the 'event_simulation' folder: cd event_simulation
 
-Compile classes: 
+#### Compile classes: 
 
 find ./src -name "*.java" > sources_list.txt
+
 javac -cp "./lib/*" @sources_list.txt
 
 
-Run Command: 
+#### Run Command: 
 
 java -cp src main.java.Engine args1 args2
     
