@@ -3,12 +3,18 @@
 ## Event-Oriented Simulation
 Change directory to the 'event_simulation' folder: cd event_simulation
 
-Compile classes: find . -name "*.java" | xargs javac
+Compile classes: 
 
-Run Command: java -cp src main.java.Engine args1
+find ./src -name "*.java" > sources_list.txt
+javac -cp "./lib/*" @sources_list.txt
+
+
+Run Command: 
+
+java -cp src main.java.Engine args1 args2
     
 where args1 = Number of seconds in event time that the simulation should run. Eg. 200
-
+where args2 = Number of simulation runs
 
 ## Process-Oriented Simulation - Adithya
 

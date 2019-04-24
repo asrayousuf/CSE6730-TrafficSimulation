@@ -23,7 +23,7 @@ public class SimulateTraffic {
 
             OutputProcessor.displayEvent(event, color);
             if (color == 0 && !Road.isRoadFull(vehicle, nextSection)) {
-                if(Math.random() < 0){//roadMap.get(section).exitProb){
+                if(Math.random() < Engine.roadMap.get(section).exitProb){
                     SimulateTraffic.departFromSystem(event);
                 }else {
                     SimulateTraffic.arriveAtIntersection(event);
