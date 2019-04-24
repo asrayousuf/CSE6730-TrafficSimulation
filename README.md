@@ -16,7 +16,7 @@ Change directory to the 'process_simulation' folder: cd process_simulation
 
 Run Command: python ProcessOrientedSimulator.py
 
-Output: Warm-up time and Mean Travel Time
+Output: Number of Cars Traversing Corridor, Warm-up Time, and Mean Travel Time
 
 
 ## Cellular Automata Simulation
