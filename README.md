@@ -15,7 +15,8 @@ javac -cp "./lib/*" @sources_list.txt
 java -cp src main.java.Engine args1 args2
     
 where args1 = Number of seconds in event time that the simulation should run. Eg. 200
-where args2 = Number of simulation runs
+
+where args2 = Number of simulation runs. Eg. 5
 
 ## Process-Oriented Simulation - Adithya
 
