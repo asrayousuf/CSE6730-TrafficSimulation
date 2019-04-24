@@ -18,7 +18,6 @@ public class Signal {
         //0-Green, 1-Yellow, 2-Red
         if(movement==1){
             signalLoc = 3;
-
             totalTime = Engine.signalMap.get(section)[direction-1][7];
         }else{
             totalTime = Engine.signalMap.get(section)[direction-1][6];

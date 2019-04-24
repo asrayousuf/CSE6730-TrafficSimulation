@@ -27,7 +27,7 @@ public class InputProcessor {
                 continue;
             if(intervals[0].startsWith("Peachtree")){
                 intersection_num++;
-                if(intersection_num==3){ // 13th st. data not given
+                if(intersection_num==4){ // 13th st. data not given
                     signalMap.put(intersection_num, new double[3][8]);
                     intersection_num++;
                 }

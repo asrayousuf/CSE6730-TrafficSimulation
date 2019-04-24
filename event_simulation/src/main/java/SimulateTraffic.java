@@ -10,6 +10,33 @@ import java.util.HashMap;
 import java.util.PriorityQueue;
 
 public class SimulateTraffic {
+    public  static void schedule(Event event){
+        Vehicle vehicle = event.getVehicle();
+        double ts = event.timestamp;
+        int section = vehicle.section;
+        int nextSection = section + 1;
+        int color = Signal.getColor(section, ts, 2, 1);
+        if(section == 5 && color ==0){
+            SimulateTraffic.departFromSystem(event);
+        }
+        else {
+
+            OutputProcessor.displayEvent(event, color);
+            if (color == 0 && !Road.isRoadFull(vehicle, nextSection)) {
+                if(Math.random() < 0){//roadMap.get(section).exitProb){
+                    SimulateTraffic.departFromSystem(event);
+                }else {
+                    SimulateTraffic.arriveAtIntersection(event);
+                }
+
+            } else {
+                if (Road.isRoadFull(vehicle, nextSection)) {
+                    System.out.println("Intersection " + nextSection + " is FULL!");
+                }
+                SimulateTraffic.waitAtIntersection(event, color);
+            }
+        }
+    }
 
     public static void arriveAtIntersection(Event event){
         Vehicle vehicle = event.getVehicle();
@@ -38,7 +65,15 @@ public class SimulateTraffic {
         int nextSection = section +1;
         double future_ts;
         String eventType = "wait";
-        future_ts = Signal.getTimeForGreenSignal(section, ts, 2,1);
+
+        if (Road.isRoadFull(vehicle, nextSection)) {
+            future_ts = Signal.getTimeForGreenSignal(nextSection, ts, 2,1);
+            if(nextSection==4){
+                future_ts = Signal.getTimeForGreenSignal(5, ts, 2,1);
+            }
+        }else /*if(color==2)*/{
+            future_ts = Signal.getTimeForGreenSignal(section, ts, 2,1);
+        }
         Event future_event = new Event(vehicle, future_ts, eventType);
         Engine.eventList.add(future_event);
 
@@ -82,4 +117,19 @@ public class SimulateTraffic {
             Engine.roadMap.get(section).vehiclesOnRoad.add(newEvent.vehicle);
             Engine.roadMap.get(section).setOccupiedLength(newEvent.vehicle.len, true);
     }
+    public static void generateInitialVehicle(double currentTS, int section){
+        String eventType = "new";
+        currentTS = currentTS;
+        Engine.vehicleId = Engine.vehicleId + 1;
+        System.out.println(String.format("\nVehicle %d generated at section %d at timestamp %f ", Engine.vehicleId, section, currentTS));
+        Event newEvent = Engine.generateEvent(currentTS, Engine.vehicleId, section, eventType);
+            /*if(Road.isRoadFull(newEvent.vehicle, section)){
+                   double waitTime = Signal.getTimeForGreenSignal(section, currentTS, 2,1);
+                   newEvent.timestamp = currentTS + waitTime;
+            }*/
+        Engine.eventList.add(newEvent);
+        Engine.roadMap.get(section).vehiclesOnRoad.add(newEvent.vehicle);
+        Engine.roadMap.get(section).setOccupiedLength(newEvent.vehicle.len, true);
+    }
+
 }
