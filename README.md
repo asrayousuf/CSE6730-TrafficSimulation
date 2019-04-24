@@ -30,7 +30,15 @@ Output: Number of Cars Traversing Corridor, Warm-up Time, and Mean Travel Time
 ## Cellular Automata Simulation
 Change directory into the 'cellular_automata' folder
 
-Run command: python CellularAutomataSimulation.py
+There are two simulation models; single lane and double lane.
+
+To run the single lane model, 
+
+Run command: python Cellular_Automata_Single_Lane.py
+
+To run the double lane model,
+
+Run command: python Cellular_Automata_Double_Lane.py
 
 Simualation is initially populated with cars and none added afterwards
 
