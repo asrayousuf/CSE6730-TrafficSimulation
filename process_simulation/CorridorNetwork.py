@@ -2,10 +2,13 @@ import Constants
 
 
 class Car:
-    def __init__(self, id_num):
+    def __init__(self, id_num, is_tracked):
         self.id = id_num
         self.identifier = 'Car ' + str(id_num)
         self.length = Constants.CAR_LENGTH
+        self.is_tracked = is_tracked
+        self.entrance_time = float('inf')
+        self.exit_time = float('inf')
 
 
 class CorridorNetwork:
