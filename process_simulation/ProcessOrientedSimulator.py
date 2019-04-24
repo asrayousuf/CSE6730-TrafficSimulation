@@ -207,6 +207,8 @@ def wait_for_green(car, intersection, section_name):
 if __name__ == '__main__':
     seed_traffic()
 
+    print 'Total Vehicles Traversing Corridor: ' + str(tracked_car_count - 1)
+
     execControl.acquire()
     while controller != 'Scheduler':
         execControl.wait()
